@@ -1,0 +1,25 @@
+{
+  "name": "node-jwt-api-base",
+  "version": "0.0.1",
+  "description": "Basic structure for a JWT based api using Node.js",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bpshonyak/node-jwt-api-base.git"
+  },
+  "keywords": [
+    "Node",
+    "JWT",
+    "Passport",
+    "MongoDB"
+  ],
+  "author": "Bogdan Pshonyak",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/bpshonyak/node-jwt-api-base/issues"
+  },
+  "homepage": "https://github.com/bpshonyak/node-jwt-api-base#readme"
+}
