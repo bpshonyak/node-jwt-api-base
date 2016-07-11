@@ -21,5 +21,17 @@
   "bugs": {
     "url": "https://github.com/bpshonyak/node-jwt-api-base/issues"
   },
-  "homepage": "https://github.com/bpshonyak/node-jwt-api-base#readme"
+  "homepage": "https://github.com/bpshonyak/node-jwt-api-base#readme",
+  "dependencies": {
+    "body-parser": "^1.15.2",
+    "dotenv": "^2.0.0",
+    "express": "^4.14.0",
+    "express-jwt": "^3.4.0",
+    "https": "^1.0.0",
+    "jsonwebtoken": "^7.0.1",
+    "lodash": "^4.13.1",
+    "morgan": "^1.7.0",
+    "passport": "^0.3.2",
+    "passport-local": "^1.0.0"
+  }
 }
