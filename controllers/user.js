@@ -35,19 +35,6 @@ exports.logout = (req, res) => {
 };
 
 /**
- * GET /signup
- * Signup page.
- */
-exports.getSignup = (req, res) => {
-  if (req.user) {
-    return res.redirect('/');
-  }
-  res.render('account/signup', {
-    title: 'Create Account'
-  });
-};
-
-/**
  * POST /signup
  * Create a new local account.
  */
@@ -60,8 +47,7 @@ exports.postSignup = (req, res, next) => {
   const errors = req.validationErrors();
 
   if (errors) {
-    req.flash('errors', errors);
-    return res.redirect('/signup');
+    res.status(401).json(errors);
   }
 
   const user = new User({
@@ -71,28 +57,14 @@ exports.postSignup = (req, res, next) => {
 
   User.findOne({ email: req.body.email }, (err, existingUser) => {
     if (existingUser) {
-      req.flash('errors', { msg: 'Account with that email address already exists.' });
-      return res.redirect('/signup');
+      var err = { msg: 'Account with that email address already exists.' };
+      res.status(401).json(err);
     }
     user.save((err) => {
       if (err) { return next(err); }
-      req.logIn(user, (err) => {
-        if (err) {
-          return next(err);
-        }
-        res.redirect('/');
-      });
+      req.user = user;
+      next();
     });
-  });
-};
-
-/**
- * GET /account
- * Profile page.
- */
-exports.getAccount = (req, res) => {
-  res.render('account/profile', {
-    title: 'Account Management'
   });
 };
 
@@ -271,19 +243,6 @@ exports.postReset = (req, res, next) => {
   ], (err) => {
     if (err) { return next(err); }
     res.redirect('/');
-  });
-};
-
-/**
- * GET /forgot
- * Forgot Password page.
- */
-exports.getForgot = (req, res) => {
-  if (req.isAuthenticated()) {
-    return res.redirect('/');
-  }
-  res.render('account/forgot', {
-    title: 'Forgot Password'
   });
 };
 
