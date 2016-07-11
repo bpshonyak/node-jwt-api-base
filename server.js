@@ -80,7 +80,7 @@ app.get('/profile', authenticate, function(req, res) {
   res.status(200).json(req.user);
 });
 
-// app.post('/login', userController.postLogin);
+app.post('/login', userController.postLogin, serialize, generateToken, respond);
 // app.get('/logout', userController.logout);
 // app.get('/forgot', userController.getForgot);
 // app.post('/forgot', userController.postForgot);
@@ -97,12 +97,6 @@ app.post('/signup', userController.postSignup, serialize, generateToken, respond
 /**
  * OAuth authentication routes. (Sign in)
  */
-
- app.post('/auth', passport.authenticate(
-  'local', {
-    session: false,
-    scope: []
-  }), serialize, generateToken, respond);
 
   app.get('/auth/facebook', passport.authenticate('facebook', { session: false, scope: ['email', 'user_location'] }));
   app.get('/auth/facebook/callback', passport.authenticate('facebook', { session: false, failureRedirect: '/' }), serialize, generateToken, respond);

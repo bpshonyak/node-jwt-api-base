@@ -16,7 +16,7 @@ exports.postLogin = (req, res, next) => {
   const errors = req.validationErrors();
 
   if (errors) {
-    req.flash('errors', errors);
+    res.status(401).json(errors);
   }
 
   passport.authenticate(
