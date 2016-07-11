@@ -62,12 +62,29 @@ exports.postSignup = (req, res, next) => {
         }
         user.save((err) => {
             if (err) {
-                return next(err);
+                res.status(401).json(err);
             }
             req.user = user;
             next();
         });
     });
+};
+
+/**
+ * GET /account/profile
+ * Retreive profile information.
+ */
+exports.getProfile = (req, res, next) => {
+
+    User.findById(req.user.id, (err, user) => {
+        if (err) {
+            res.status(401).json(err);
+        }
+
+        res.status(200).json({prfile: user});
+
+    });
+
 };
 
 /**
@@ -81,13 +98,12 @@ exports.postUpdateProfile = (req, res, next) => {
     const errors = req.validationErrors();
 
     if (errors) {
-        req.flash('errors', errors);
-        return res.redirect('/account');
+        res.status(401).json(errors);
     }
 
     User.findById(req.user.id, (err, user) => {
         if (err) {
-            return next(err);
+            res.status(401).json(err);
         }
         user.email = req.body.email || '';
         user.profile.name = req.body.name || '';
@@ -97,13 +113,12 @@ exports.postUpdateProfile = (req, res, next) => {
         user.save((err) => {
             if (err) {
                 if (err.code === 11000) {
-                    req.flash('errors', {msg: 'The email address you have entered is already associated with an account.'});
-                    return res.redirect('/account');
+                    var err = {msg: 'The email address you have entered is already associated with an account.'};
+                    res.status(401).json(err);
                 }
-                return next(err);
+                res.status(401).json(err);
             }
-            req.flash('success', {msg: 'Profile information has been updated.'});
-            res.redirect('/account');
+            res.status(200).json({msg: 'Profile information has been updated.'});
         });
     });
 };
@@ -119,21 +134,19 @@ exports.postUpdatePassword = (req, res, next) => {
     const errors = req.validationErrors();
 
     if (errors) {
-        req.flash('errors', errors);
-        return res.redirect('/account');
+        res.status(401).json(errors);
     }
 
     User.findById(req.user.id, (err, user) => {
         if (err) {
-            return next(err);
+            res.status(401).json(err);
         }
         user.password = req.body.password;
         user.save((err) => {
             if (err) {
-                return next(err);
+                res.status(401).json(err);
             }
-            req.flash('success', {msg: 'Password has been changed.'});
-            res.redirect('/account');
+            res.status(200).json({msg: 'Password has been changed.'});
         });
     });
 };
@@ -147,11 +160,10 @@ exports.postDeleteAccount = (req, res, next) => {
         _id: req.user.id
     }, (err) => {
         if (err) {
-            return next(err);
+            res.status(401).json(err);
         }
-        req.logout();
-        req.flash('info', {msg: 'Your account has been deleted.'});
-        res.redirect('/');
+        //TODO: Revoke refreshToken here
+        res.status(200).json({msg: 'Your account has been deleted.'});
     });
 };
 
@@ -163,16 +175,15 @@ exports.getOauthUnlink = (req, res, next) => {
     const provider = req.params.provider;
     User.findById(req.user.id, (err, user) => {
         if (err) {
-            return next(err);
+            res.status(401).json(err);
         }
         user[provider] = undefined;
         user.tokens = user.tokens.filter(token => token.kind !== provider);
         user.save((err) => {
             if (err) {
-                return next(err);
+                res.status(401).json(err);
             }
-            req.flash('info', {msg: `${provider} account has been unlinked.`});
-            res.redirect('/account');
+            res.status(200).json({msg: `${provider} account has been unlinked.`});
         });
     });
 };

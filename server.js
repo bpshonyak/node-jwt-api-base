@@ -84,13 +84,12 @@ app.post('/login', userController.postLogin, serialize, generateToken, respond);
 // app.post('/forgot', userController.postForgot);
 // app.get('/reset/:token', userController.getReset);
 // app.post('/reset/:token', userController.postReset);
-// app.get('/signup', userController.getSignup);
 app.post('/signup', userController.postSignup, serialize, generateToken, respond);
 // app.get('/account', authenticate, userController.getAccount);
-// app.post('/account/profile', authenticate, userController.postUpdateProfile);
-// app.post('/account/password', authenticate, userController.postUpdatePassword);
-// app.post('/account/delete', authenticate, userController.postDeleteAccount);
-// app.get('/account/unlink/:provider', authenticate, userController.getOauthUnlink);
+app.get('/account/profile', authenticate, userController.getProfile);
+app.post('/account/password', authenticate, userController.postUpdatePassword);
+app.post('/account/delete', authenticate, userController.postDeleteAccount);
+app.get('/account/unlink/:provider', authenticate, userController.getOauthUnlink);
 
 /**
  * OAuth authentication routes. (Sign in)
