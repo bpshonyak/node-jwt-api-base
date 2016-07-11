@@ -71,13 +71,11 @@ app.use(passport.initialize());
  */
 
 app.get('/', function(req, res) {
-  res.status(200).json({
-    hello: 'world'
-  });
+    res.status(200).json({hello: 'world'});
 });
 
 app.get('/profile', authenticate, function(req, res) {
-  res.status(200).json(req.user);
+    res.status(200).json(req.user);
 });
 
 app.post('/login', userController.postLogin, serialize, generateToken, respond);
@@ -98,37 +96,40 @@ app.post('/signup', userController.postSignup, serialize, generateToken, respond
  * OAuth authentication routes. (Sign in)
  */
 
-  app.get('/auth/facebook', passport.authenticate('facebook', { session: false, scope: ['email', 'user_location'] }));
-  app.get('/auth/facebook/callback', passport.authenticate('facebook', { session: false, failureRedirect: '/' }), serialize, generateToken, respond);
+app.get('/auth/facebook', passport.authenticate('facebook', {
+    session: false,
+    scope: ['email', 'user_location']
+}));
+app.get('/auth/facebook/callback', passport.authenticate('facebook', {
+    session: false,
+    failureRedirect: '/'
+}), serialize, generateToken, respond);
 
-  /**
+/**
    * Helper Funtions
    */
 
-  function serialize(req, res, next) {
+function serialize(req, res, next) {
 
     req.user = {
-      id: req.user.id
+        id: req.user.id
     }
 
     next();
-  }
+}
 
-  function generateToken(req, res, next) {
+function generateToken(req, res, next) {
     req.token = jwt.sign({
-      id: req.user.id,
+        id: req.user.id
     }, process.env.SECRET, {
-      expiresIn: 5 * 60
+        expiresIn: 5 * 60
     });
     next();
-  }
+}
 
-  function respond(req, res) {
-    res.status(200).json({
-      user: req.user,
-      token: req.token
-    });
-  }
+function respond(req, res) {
+    res.status(200).json({user: req.user, token: req.token});
+}
 
 /**
  * Error Handler.
