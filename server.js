@@ -10,6 +10,7 @@ const logger = require('morgan');
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 const passport = require('passport');
+const expressValidator = require('express-validator');
 const expressJwt = require('express-jwt');
 const jwt = require('jsonwebtoken');
 
@@ -25,6 +26,11 @@ dotenv.load({path: '.env'});
 //   key: process.env.PRIVATE_KEY,
 //   cert: process.env.CERTIFICATE
 // };
+
+/**
+ * Controllers (route handlers).
+ */
+const userController = require('./controllers/user');
 
 /**
  * API keys and Passport configuration.
@@ -56,6 +62,7 @@ mongoose.connection.on('error', () => {
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
+app.use(expressValidator());
 app.use(passport.initialize());
 
 /**
@@ -68,9 +75,23 @@ app.get('/', function(req, res) {
   });
 });
 
-app.get('/me', authenticate, function(req, res) {
+app.get('/profile', authenticate, function(req, res) {
   res.status(200).json(req.user);
 });
+
+app.post('/login', userController.postLogin);
+app.get('/logout', userController.logout);
+app.get('/forgot', userController.getForgot);
+app.post('/forgot', userController.postForgot);
+app.get('/reset/:token', userController.getReset);
+app.post('/reset/:token', userController.postReset);
+app.get('/signup', userController.getSignup);
+app.post('/signup', userController.postSignup);
+app.get('/account', authenticate, userController.getAccount);
+app.post('/account/profile', authenticate, userController.postUpdateProfile);
+app.post('/account/password', authenticate, userController.postUpdatePassword);
+app.post('/account/delete', authenticate, userController.postDeleteAccount);
+app.get('/account/unlink/:provider', authenticate, userController.getOauthUnlink);
 
 /**
  * OAuth authentication routes. (Sign in)
