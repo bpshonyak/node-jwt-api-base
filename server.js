@@ -82,11 +82,19 @@ app.get('/me', authenticate, function(req, res) {
     scope: []
   }), serialize, generateToken, respond);
 
+  app.get('/auth/facebook', passport.authenticate('facebook', { session: false, scope: ['email', 'user_location'] }));
+  app.get('/auth/facebook/callback', passport.authenticate('facebook', { session: false, failureRedirect: '/' }), serialize, generateToken, respond);
+
   /**
    * Helper Funtions
    */
 
   function serialize(req, res, next) {
+
+    req.user = {
+      id: req.user.id
+    }
+
     next();
   }
 
