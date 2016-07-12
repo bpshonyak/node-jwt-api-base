@@ -50,8 +50,9 @@ passport.use(new FacebookStrategy({
   if (req.user) {
     User.findOne({ facebook: profile.id }, (err, existingUser) => {
       if (existingUser) {
-        req.flash('errors', { msg: 'There is already a Facebook account that belongs to you. Sign in with that account or delete it, then link it with your current account.' });
-        done(err);
+        // req.flash('errors', { msg: 'There is already a Facebook account that belongs to you. Sign in with that account or delete it, then link it with your current account.' });
+        // done(err);
+        done(null, false, { msg: 'There is already a Facebook account that belongs to you. Sign in with that account or delete it, then link it with your current account.' });
       } else {
         User.findById(req.user.id, (err, user) => {
           user.facebook = profile.id;
@@ -60,8 +61,9 @@ passport.use(new FacebookStrategy({
           user.profile.gender = user.profile.gender || profile._json.gender;
           user.profile.picture = user.profile.picture || `https://graph.facebook.com/${profile.id}/picture?type=large`;
           user.save((err) => {
-            req.flash('info', { msg: 'Facebook account has been linked.' });
-            done(err, user);
+            // req.flash('info', { msg: 'Facebook account has been linked.' });
+            // done(err, user);
+            done(null, false, { msg: 'Facebook account has been linked.'});
           });
         });
       }
@@ -73,8 +75,9 @@ passport.use(new FacebookStrategy({
       }
       User.findOne({ email: profile._json.email }, (err, existingEmailUser) => {
         if (existingEmailUser) {
-          req.flash('errors', { msg: 'There is already an account using this email address. Sign in to that account and link it with Facebook manually from Account Settings.' });
-          done(err);
+          // req.flash('errors', { msg: 'There is already an account using this email address. Sign in to that account and link it with Facebook manually from Account Settings.' });
+          // done(err);
+          done(null, false, { msg: 'There is already an account using this email address. Sign in to that account and link it with Facebook manually from Account Settings.'});
         } else {
           const user = new User();
           user.email = profile._json.email;

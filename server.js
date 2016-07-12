@@ -118,6 +118,7 @@ function serialize(req, res, next) {
 }
 
 function generateToken(req, res, next) {
+    // Define token body
     req.token = jwt.sign({
         id: req.user.id
     }, process.env.SECRET, {
