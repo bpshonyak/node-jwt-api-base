@@ -15,6 +15,8 @@ const expressValidator = require('express-validator');
 const expressJwt = require('express-jwt');
 const jwt = require('jsonwebtoken');
 
+const RefreshToken = require('./models/RefreshToken');
+
 /**
  * Load environment variables from .env file, where API keys and passwords are configured.
  */
