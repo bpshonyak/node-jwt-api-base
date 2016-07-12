@@ -131,7 +131,7 @@ function respond(req, res) {
 }
 
 /**
- * Error Handler.
+ * Error Handler. (SHOULD ONLY BE USED IN DEVELOPMENT)
  */
 app.use(errorHandler());
 
