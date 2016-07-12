@@ -81,7 +81,7 @@ exports.getProfile = (req, res, next) => {
             res.status(401).json(err);
         }
 
-        res.status(200).json({prfile: user});
+        res.status(200).json({profile: user});
 
     });
 
