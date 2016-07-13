@@ -14,8 +14,9 @@ const passport = require('passport');
 const expressValidator = require('express-validator');
 const expressJwt = require('express-jwt');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 
-const RefreshToken = require('./models/RefreshToken');
+const Client = require('./models/Client');
 
 /**
  * Load environment variables from .env file, where API keys and passwords are configured.
@@ -82,32 +83,27 @@ app.get('/', function(req, res) {
                 type: 'POST',
                 desc: 'Login with email and password',
                 protected: false
-            },
-            {
+            }, {
                 path: '/signup',
                 type: 'POST',
                 desc: 'Register with email and password',
                 protected: false
-            },
-            {
+            }, {
                 path: '/account/profile',
                 type: 'GET',
                 desc: 'Retrieve user profile information',
                 protected: true
-            },
-            {
+            }, {
                 path: '/account/password',
                 type: 'POST',
                 desc: 'Change a local users password',
                 protected: true
-            },
-            {
+            }, {
                 path: '/account/delete',
                 type: 'POST',
                 desc: 'Delete a user',
                 protected: true
-            },
-            {
+            }, {
                 path: '/auth/facebook',
                 type: 'GET',
                 desc: 'Authenticate user with their facebook account',
@@ -121,13 +117,13 @@ app.get('/profile', authenticate, function(req, res) {
     res.status(200).json(req.user);
 });
 
-app.post('/login', userController.postLogin, serialize, generateToken, respond);
+app.post('/login', userController.postLogin, serializeUser, generateToken, respond);
 // app.get('/logout', userController.logout);
 // app.get('/forgot', userController.getForgot);
 // app.post('/forgot', userController.postForgot);
 // app.get('/reset/:token', userController.getReset);
 // app.post('/reset/:token', userController.postReset);
-app.post('/signup', userController.postSignup, serialize, generateToken, respond);
+app.post('/signup', userController.postSignup, serializeUser, generateToken, respond);
 // app.get('/account', authenticate, userController.getAccount);
 app.get('/account/profile', authenticate, userController.getProfile);
 app.post('/account/password', authenticate, userController.postUpdatePassword);
@@ -145,13 +141,13 @@ app.get('/auth/facebook', passport.authenticate('facebook', {
 app.get('/auth/facebook/callback', passport.authenticate('facebook', {
     session: false,
     failureRedirect: '/'
-}), serialize, generateToken, respond);
+}), serializeUser, generateToken, respond);
 
 /**
-   * Helper Funtions
-   */
+ * Helper Funtions
+ */
 
-function serialize(req, res, next) {
+function serializeUser(req, res, next) {
 
     req.user = {
         id: req.user.id
@@ -168,6 +164,19 @@ function generateToken(req, res, next) {
         expiresIn: 5 * 60
     });
     next();
+}
+
+function generateRefreshToken(req, res, next) {
+  if (req.query.permanent === 'true') {
+    req.token.refreshToken = req.user.clientId.toString() + '.' + crypto.randomBytes(
+      40).toString('hex');
+    db.client.storeToken({
+      id: req.user.clientId,
+      refreshToken: req.token.refreshToken
+    }, next);
+  } else {
+    next();
+  }
 }
 
 function respond(req, res) {
