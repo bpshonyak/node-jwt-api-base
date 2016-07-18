@@ -192,7 +192,7 @@ app.use(errorHandler());
  * Start server (development).
  */
 http.createServer(app).listen(3000, function() {
-    console.log('server listening on port ', 3000);
+    console.log('Server listening on port ', 3000);
 });
 
 /**
