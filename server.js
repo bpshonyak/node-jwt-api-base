@@ -14,6 +14,7 @@ const passport = require('passport');
 const expressValidator = require('express-validator');
 const expressJwt = require('express-jwt');
 const jwt = require('jsonwebtoken');
+
 const crypto = require('crypto');
 
 const Client = require('./models/Client');
@@ -83,6 +84,11 @@ app.use(passport.initialize());
      token: function(req, res) {
          res.status(201).json({
            refreshToken: req.refreshToken
+         });
+     },
+     revoke: function(req, res) {
+         res.status(200).json({
+           success: "Refresh token has been revoked!"
          });
      }
  }
@@ -164,10 +170,12 @@ app.get('/auth/facebook/callback', passport.authenticate('facebook', {
 
 app.get('/token', authenticate, generateRefreshToken, respond.token);
 app.post('/token/refresh', validateRefreshToken, generateAccessToken, respond.auth);
+app.post('/token/revoke', revokeRefreshToken, respond.revoke);
 
 /**
  * Helper Funtions
  */
+
 
 function serializeUser(req, res, next) {
     req.user = { id: req.user.id };
@@ -175,8 +183,6 @@ function serializeUser(req, res, next) {
 }
 
 function validateRefreshToken(req, res, next) {
-
-    console.log("VALIDATE FUCTION");
 
     req.user = {
         id: req.body.id
@@ -192,6 +198,25 @@ function validateRefreshToken(req, res, next) {
             next();
         }
     });
+}
+
+function revokeRefreshToken(req, res, next) {
+
+    req.user = {
+        id: req.body.id
+    }
+
+    clientController.revokeToken(req.body.id, req.body.refreshToken, function(valid) {
+
+        if(!valid) {
+            res.status(500).json({
+              error: "Failed to revoke refresh token."
+            });
+        } else {
+            next();
+        }
+    });
+
 }
 
 function generateAccessToken(req, res, next) {
@@ -214,6 +239,7 @@ function generateRefreshToken(req, res, next) {
         next();
     });
 }
+
 
 /**
  * Error Handler. (SHOULD ONLY BE USED IN DEVELOPMENT)

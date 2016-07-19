@@ -1,7 +1,8 @@
 const crypto = require('crypto');
 const Client = require('../models/Client');
 
-exports.createOrUpdateClient = function(user_id, cb) {
+
+exports.createOrUpdateClient = (user_id, cb) => {
 
   Client.findOne({ _id: user_id}, (err, existingClient) => {
 
@@ -34,7 +35,7 @@ exports.createOrUpdateClient = function(user_id, cb) {
   });
 }
 
-exports.validateToken = function(user_id, token, cb) {
+exports.validateToken = (user_id, token, cb) => {
   Client.findOne({ _id: user_id}, (err, existingClient) => {
 
     if (!existingClient) {
@@ -57,6 +58,31 @@ exports.validateToken = function(user_id, token, cb) {
   });
 }
 
-exports.revokeToken = function(user_id, token, cb) {
+exports.revokeToken = (user_id, token, cb) => {
+  Client.findOne({ _id: user_id}, (err, existingClient) => {
 
+    if (!existingClient) {
+      cb(false);
+    } else {
+
+      var valid = false;
+      var tokenIndex = -1;
+
+      for (var i = 0; i < existingClient.refreshTokens.length; i++) {
+        if (token === existingClient.refreshTokens[i]) {
+          valid = true;
+          tokenIndex = i;
+        }
+      }
+
+      if(valid){
+        existingClient.refreshTokens.splice( tokenIndex, 1 );
+      }
+
+      existingClient.save((err) => {
+        cb(valid, err);
+      });
+
+    }
+  });
 }
