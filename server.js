@@ -71,6 +71,23 @@ app.use(expressValidator());
 app.use(passport.initialize());
 
 /**
+ * Server responses
+ */
+ const respond = {
+     auth: function(req, res) {
+         res.status(200).json({
+           user: req.user,
+           token: req.token
+         });
+     },
+     token: function(req, res) {
+         res.status(201).json({
+           refreshToken: req.refreshToken
+         });
+     }
+ }
+
+/**
  * API routes.
  */
 
@@ -118,13 +135,13 @@ app.get('/profile', authenticate, function(req, res) {
     res.status(200).json(req.user);
 });
 
-app.post('/login', userController.postLogin, serializeUser, generateToken, respond);
+app.post('/login', userController.postLogin, serializeUser, generateAccessToken, respond.auth);
 // app.get('/logout', userController.logout);
 // app.get('/forgot', userController.getForgot);
 // app.post('/forgot', userController.postForgot);
 // app.get('/reset/:token', userController.getReset);
 // app.post('/reset/:token', userController.postReset);
-app.post('/signup', userController.postSignup, serializeUser, generateToken, respond);
+app.post('/signup', userController.postSignup, serializeUser, generateAccessToken, respond.auth);
 // app.get('/account', authenticate, userController.getAccount);
 app.get('/account/profile', authenticate, userController.getProfile);
 app.post('/account/password', authenticate, userController.postUpdatePassword);
@@ -143,24 +160,25 @@ app.get('/auth/facebook', passport.authenticate('facebook', {
 app.get('/auth/facebook/callback', passport.authenticate('facebook', {
     session: false,
     failureRedirect: '/'
-}), serializeUser, generateToken, respond);
+}), serializeUser, generateAccessToken, respond.auth);
 
-app.get('/auth/refresh-token', authenticate, generateRefreshToken);
+app.get('/token', authenticate, generateRefreshToken, respond.token);
+app.post('/token/refresh', validateRefreshToken, generateAccessToken, respond.auth);
 
 /**
  * Helper Funtions
  */
 
 function serializeUser(req, res, next) {
-
-    req.user = {
-        id: req.user.id
-    }
-
+    req.user = { id: req.user.id };
     next();
 }
 
-function generateToken(req, res, next) {
+function validateRefreshToken(req, res, next) {
+    clientController.validateToken(req.user.id, req.refreshToken)
+}
+
+function generateAccessToken(req, res, next) {
     // Define token body
     req.token = jwt.sign({
         id: req.user.id
@@ -171,18 +189,14 @@ function generateToken(req, res, next) {
 }
 
 function generateRefreshToken(req, res, next) {
-    clientController.createOrUpdateClient(req.user.id, function(client, err) {
+    clientController.createOrUpdateClient(req.user.id, function(refreshToken, err) {
         if (err)
             console.log(err);
 
-        console.log(client);
-        // req.token.refreshToken = '';
+        console.log(refreshToken);
+        req.refreshToken = refreshToken;
         next();
     });
-}
-
-function respond(req, res) {
-    res.status(200).json({user: req.user, token: req.token});
 }
 
 /**
