@@ -175,7 +175,23 @@ function serializeUser(req, res, next) {
 }
 
 function validateRefreshToken(req, res, next) {
-    clientController.validateToken(req.user.id, req.refreshToken)
+
+    console.log("VALIDATE FUCTION");
+
+    req.user = {
+        id: req.body.id
+    }
+
+    clientController.validateToken(req.body.id, req.body.refreshToken, function(valid) {
+
+        if(!valid) {
+            res.status(500).json({
+              error: "Failed to validate refresh token."
+            });
+        } else {
+            next();
+        }
+    });
 }
 
 function generateAccessToken(req, res, next) {

@@ -41,9 +41,17 @@ exports.validateToken = function(user_id, token, cb) {
       cb(false);
     } else {
 
+      var valid = false;
+
       existingClient.refreshTokens.map(function(refreshToken) {
 
+        if (token === refreshToken) {
+          valid = true;
+          return;
+        }
       });
+
+      cb(valid);
 
     }
   });
