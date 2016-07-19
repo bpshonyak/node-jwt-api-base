@@ -4,7 +4,6 @@
 const express = require('express');
 const request = require('request');
 const http = require('http');
-const https = require('https');
 const bodyParser = require('body-parser');
 const logger = require('morgan');
 const errorHandler = require('errorhandler');
@@ -15,22 +14,10 @@ const expressValidator = require('express-validator');
 const expressJwt = require('express-jwt');
 const jwt = require('jsonwebtoken');
 
-const crypto = require('crypto');
-
-const Client = require('./models/Client');
-
 /**
  * Load environment variables from .env file, where API keys and passwords are configured.
  */
 dotenv.load({path: '.env'});
-
-/**
- * HTTPS Credentials (Use in Production)
- */
-// var credentials = {
-//   key: process.env.PRIVATE_KEY,
-//   cert: process.env.CERTIFICATE
-// };
 
 /**
  * Controllers (route handlers).
@@ -99,41 +86,7 @@ app.use(passport.initialize());
 
 app.get('/', function(req, res) {
     res.status(200).json({
-        title: 'SPA-AUTH-STARTER',
-        author: 'Bogdan Pshonyak',
-        routes: [
-            {
-                path: '/login',
-                type: 'POST',
-                desc: 'Login with email and password',
-                protected: false
-            }, {
-                path: '/signup',
-                type: 'POST',
-                desc: 'Register with email and password',
-                protected: false
-            }, {
-                path: '/account/profile',
-                type: 'GET',
-                desc: 'Retrieve user profile information',
-                protected: true
-            }, {
-                path: '/account/password',
-                type: 'POST',
-                desc: 'Change a local users password',
-                protected: true
-            }, {
-                path: '/account/delete',
-                type: 'POST',
-                desc: 'Delete a user',
-                protected: true
-            }, {
-                path: '/auth/facebook',
-                type: 'GET',
-                desc: 'Authenticate user with their facebook account',
-                protected: false
-            }
-        ]
+        API: 'JWT-AUTH-STARTER'
     });
 });
 
@@ -252,10 +205,3 @@ app.use(errorHandler());
 http.createServer(app).listen(3000, function() {
     console.log('Server listening on port ', 3000);
 });
-
-/**
- * Start server (production).
- */
-// https.createServer(credentials,app).listen(3000, function() {
-//   console.log('server listening on port ', 3000);
-// });
