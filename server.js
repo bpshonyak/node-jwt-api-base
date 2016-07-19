@@ -35,6 +35,7 @@ dotenv.load({path: '.env'});
  * Controllers (route handlers).
  */
 const userController = require('./controllers/user');
+const clientController = require('./controllers/client');
 
 /**
  * API keys and Passport configuration.
@@ -138,10 +139,13 @@ app.get('/auth/facebook', passport.authenticate('facebook', {
     session: false,
     scope: ['email', 'user_location']
 }));
+
 app.get('/auth/facebook/callback', passport.authenticate('facebook', {
     session: false,
     failureRedirect: '/'
 }), serializeUser, generateToken, respond);
+
+app.get('/auth/refresh-token', authenticate, generateRefreshToken);
 
 /**
  * Helper Funtions
@@ -167,16 +171,14 @@ function generateToken(req, res, next) {
 }
 
 function generateRefreshToken(req, res, next) {
-  if (req.query.permanent === 'true') {
-    req.token.refreshToken = req.user.clientId.toString() + '.' + crypto.randomBytes(
-      40).toString('hex');
-    db.client.storeToken({
-      id: req.user.clientId,
-      refreshToken: req.token.refreshToken
-    }, next);
-  } else {
-    next();
-  }
+    clientController.createOrUpdateClient(req.user.id, function(client, err) {
+        if (err)
+            console.log(err);
+
+        console.log(client);
+        // req.token.refreshToken = '';
+        next();
+    });
 }
 
 function respond(req, res) {

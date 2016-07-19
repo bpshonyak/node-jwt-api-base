@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 
 const clientSchema = new mongoose.Schema({
-  id: String,
-  refreshToken: String
+  clientCount: Number,
+  refreshTokens: Array
 }, { timestamps: true });
 
 const Client = mongoose.model('Client', clientSchema);
