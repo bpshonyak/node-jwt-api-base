@@ -95,7 +95,7 @@ app.get('/profile', authenticate, function(req, res) {
 });
 
 app.post('/login', userController.postLogin, serializeUser, generateAccessToken, respond.auth);
-// app.get('/logout', userController.logout);
+app.get('/logout', userController.logout);
 // app.get('/forgot', userController.getForgot);
 // app.post('/forgot', userController.postForgot);
 // app.get('/reset/:token', userController.getReset);
@@ -128,7 +128,6 @@ app.post('/token/revoke', revokeRefreshToken, respond.revoke);
 /**
  * Helper Funtions
  */
-
 
 function serializeUser(req, res, next) {
     req.user = { id: req.user.id };
