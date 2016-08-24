@@ -101,7 +101,6 @@ app.get('/logout', function (req, res) { res.redirect('/token/revoke') });
 // app.get('/reset/:token', userController.getReset);
 // app.post('/reset/:token', userController.postReset);
 app.post('/signup', userController.postSignup, serializeUser, generateAccessToken, respond.auth);
-// app.get('/account', authenticate, userController.getAccount);
 app.get('/account/profile', authenticate, userController.getProfile);
 app.post('/account/password', authenticate, userController.postUpdatePassword);
 app.post('/account/delete', authenticate, userController.postDeleteAccount);
@@ -184,7 +183,7 @@ function generateAccessToken(req, res, next) {
 function generateRefreshToken(req, res, next) {
     clientController.createOrUpdateClient(req.user.id, function(refreshToken, err) {
         if (err)
-            console.log(err);
+            next(err);
 
         console.log(refreshToken);
         req.refreshToken = refreshToken;
