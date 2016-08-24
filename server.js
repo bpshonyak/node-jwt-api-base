@@ -95,7 +95,7 @@ app.get('/profile', authenticate, function(req, res) {
 });
 
 app.post('/login', userController.postLogin, serializeUser, generateAccessToken, respond.auth);
-app.get('/logout', userController.logout);
+app.get('/logout', function (req, res) { res.redirect('/token/revoke') });
 // app.get('/forgot', userController.getForgot);
 // app.post('/forgot', userController.postForgot);
 // app.get('/reset/:token', userController.getReset);
@@ -191,7 +191,6 @@ function generateRefreshToken(req, res, next) {
         next();
     });
 }
-
 
 /**
  * Error Handler. (SHOULD ONLY BE USED IN DEVELOPMENT)
