@@ -15,22 +15,12 @@ exports.postLogin = (req, res, next) => {
 
     const errors = req.validationErrors();
 
-    if (errors) {
-        res.status(401).json(errors);
-    }
+    if (errors) return next(errors);
 
     passport.authenticate('local', {
         session: false,
         scope: []
     })(req, res, next);
-};
-
-/**
- * GET /logout
- * Log out.
- */
-exports.logout = (req, res) => {
-    //TODO: revoke refreshToken here
 };
 
 /**
@@ -45,27 +35,28 @@ exports.postSignup = (req, res, next) => {
 
     const errors = req.validationErrors();
 
-    if (errors) {
-        res.status(401).json(errors);
-    }
+    if (errors) return next(errors);
 
     const user = new User({email: req.body.email, password: req.body.password});
 
     User.findOne({
         email: req.body.email
     }, (err, existingUser) => {
+
+        if(err) return next(err);
+
         if (existingUser) {
             var err = {
                 msg: 'Account with that email address already exists.'
             };
-            res.status(401).json(err);
+            return next(err);
         }
         user.save((err) => {
             if (err) {
-                res.status(401).json(err);
+                return next(err);
             }
             req.user = user;
-            next();
+            return next(null);
         });
     });
 };

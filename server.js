@@ -62,11 +62,19 @@ app.use(passport.initialize());
  * Server responses
  */
  const respond = {
-     auth: function(req, res) {
+     auth: function(err, req, res, next) {
+
+         console.log('inside auth response');
+
+         if (err) return next(err);
+
+        //  res.status(500).json({error: err});
+
          res.status(200).json({
            user: req.user,
            token: req.token
          });
+
      },
      token: function(req, res) {
          res.status(201).json({
@@ -128,9 +136,13 @@ app.post('/token/revoke', revokeRefreshToken, respond.revoke);
  * Helper Funtions
  */
 
-function serializeUser(req, res, next) {
+function serializeUser(err, req, res, next) {
+    if (err) return next(err);
+
+    console.log("opps");
+
     req.user = { id: req.user.id };
-    next();
+    return next(null);
 }
 
 function validateRefreshToken(req, res, next) {
@@ -146,7 +158,7 @@ function validateRefreshToken(req, res, next) {
               error: "Failed to validate refresh token."
             });
         } else {
-            next();
+            return next(null);
         }
     });
 }
@@ -164,37 +176,47 @@ function revokeRefreshToken(req, res, next) {
               error: "Failed to revoke refresh token."
             });
         } else {
-            next();
+            return next(null);
         }
     });
 
 }
 
-function generateAccessToken(req, res, next) {
+function generateAccessToken(err, req, res, next) {
+
+    console.log('inside generate access token');
+
+    if (err) return next(err);
+
     // Define token body
     req.token = jwt.sign({
         id: req.user.id
     }, process.env.SECRET, {
         expiresIn: 5 * 60
     });
-    next();
+    return next(null);
 }
 
 function generateRefreshToken(req, res, next) {
     clientController.createOrUpdateClient(req.user.id, function(refreshToken, err) {
-        if (err)
-            next(err);
+        if (err) return next(err);
 
         console.log(refreshToken);
         req.refreshToken = refreshToken;
-        next();
+        return next(null);
     });
 }
 
 /**
  * Error Handler. (SHOULD ONLY BE USED IN DEVELOPMENT)
  */
-app.use(errorHandler());
+// app.use(errorHandler());
+
+// error handler
+app.use(function(err, req, res, next) {
+    res.status(500);
+    res.json({ errors: err });
+});
 
 /**
  * Start server (development).
