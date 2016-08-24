@@ -59,7 +59,7 @@ exports.postSignup = (req, res, next) => {
                 return next(err)
 
             req.user = user;
-            return next(false);
+            return next();
         });
     });
 };
@@ -72,10 +72,12 @@ exports.getProfile = (req, res, next) => {
 
     User.findById(req.user.id, (err, user) => {
         if (err) {
-            res.status(401).json(err);
+            return next(err);
         }
 
-        res.status(200).json({profile: user});
+        req.profile = user;
+
+        next();
 
     });
 
@@ -91,13 +93,13 @@ exports.postUpdateProfile = (req, res, next) => {
 
     const errors = req.validationErrors();
 
-    if (errors) {
-        res.status(401).json(errors);
-    }
+    if (errors)
+        return next(errors);
+
 
     User.findById(req.user.id, (err, user) => {
         if (err) {
-            res.status(401).json(err);
+            return next(err);
         }
         user.email = req.body.email || '';
         user.profile.name = req.body.name || '';
@@ -108,9 +110,9 @@ exports.postUpdateProfile = (req, res, next) => {
             if (err) {
                 if (err.code === 11000) {
                     var err = {msg: 'The email address you have entered is already associated with an account.'};
-                    res.status(401).json(err);
+                    return next(err);
                 }
-                res.status(401).json(err);
+                return next(err);
             }
             res.status(200).json({msg: 'Profile information has been updated.'});
         });
@@ -127,19 +129,19 @@ exports.postUpdatePassword = (req, res, next) => {
 
     const errors = req.validationErrors();
 
-    if (errors) {
-        res.status(401).json(errors);
-    }
+    if (errors)
+        return next(errors);
+
 
     User.findById(req.user.id, (err, user) => {
         if (err) {
-            res.status(401).json(err);
+            return next(err);
         }
         user.password = req.body.password;
         user.save((err) => {
-            if (err) {
-                res.status(401).json(err);
-            }
+            if (err)
+                return next(err);
+
             res.status(200).json({msg: 'Password has been changed.'});
         });
     });
@@ -153,9 +155,9 @@ exports.postDeleteAccount = (req, res, next) => {
     User.remove({
         _id: req.user.id
     }, (err) => {
-        if (err) {
-            res.status(401).json(err);
-        }
+        if (err)
+            return next(err);
+
         //TODO: Revoke refreshToken here
         res.status(200).json({msg: 'Your account has been deleted.'});
     });
@@ -168,15 +170,15 @@ exports.postDeleteAccount = (req, res, next) => {
 exports.getOauthUnlink = (req, res, next) => {
     const provider = req.params.provider;
     User.findById(req.user.id, (err, user) => {
-        if (err) {
-            res.status(401).json(err);
-        }
+        if (err)
+            return next(err);
+
         user[provider] = undefined;
         user.tokens = user.tokens.filter(token => token.kind !== provider);
         user.save((err) => {
-            if (err) {
-                res.status(401).json(err);
-            }
+            if (err)
+                return next(err);
+
             res.status(200).json({msg: `${provider} account has been unlinked.`});
         });
     });
@@ -191,9 +193,9 @@ exports.getReset = (req, res, next) => {
         return res.redirect('/');
     }
     User.findOne({passwordResetToken: req.params.token}).where('passwordResetExpires').gt(Date.now()).exec((err, user) => {
-        if (err) {
+        if (err)
             return next(err);
-        }
+
         if (!user) {
             req.flash('errors', {msg: 'Password reset token is invalid or has expired.'});
             return res.redirect('/forgot');

@@ -63,16 +63,15 @@ app.use(passport.initialize());
  */
 const respond = {
     auth: function(req, res, next) {
-
         res.status(200).json({user: req.user, token: req.token});
-
+    },
+    profile: function(req, res, next) {
+        res.status(200).json({profile: req.profile});
     },
     token: function(req, res, next) {
-
         res.status(201).json({refreshToken: req.refreshToken});
     },
     revoke: function(req, res, next) {
-
         res.status(200).json({success: "Refresh token has been revoked!"});
     }
 }
@@ -98,7 +97,7 @@ app.get('/logout', function(req, res) {
 // app.get('/reset/:token', userController.getReset);
 // app.post('/reset/:token', userController.postReset);
 app.post('/signup', userController.postSignup, serializeUser, generateAccessToken, respond.auth);
-app.get('/account/profile', authenticate, userController.getProfile);
+app.get('/account/profile', authenticate, userController.getProfile, respond.profile);
 app.post('/account/password', authenticate, userController.postUpdatePassword);
 app.post('/account/delete', authenticate, userController.postDeleteAccount);
 app.get('/account/unlink/:provider', authenticate, userController.getOauthUnlink);
@@ -127,8 +126,6 @@ app.post('/token/revoke', revokeRefreshToken, respond.revoke);
 
 function serializeUser(req, res, next) {
 
-    console.log('inside serialize user');
-
     req.user = {
         id: req.user.id
     };
@@ -145,7 +142,7 @@ function validateRefreshToken(req, res, next) {
     clientController.validateToken(req.body.id, req.body.refreshToken, function(valid) {
 
         if (!valid) {
-            res.status(500).json({error: "Failed to validate refresh token."});
+            return next({ msg: "Failed to validate refresh token.", status: 500 });
         } else {
             return next();
         }
@@ -161,7 +158,7 @@ function revokeRefreshToken(req, res, next) {
     clientController.revokeToken(req.body.id, req.body.refreshToken, function(valid) {
 
         if (!valid) {
-            res.status(500).json({error: "Failed to revoke refresh token."});
+            return next({ msg: "Failed to revoke refresh token.", status: 500 });
         } else {
             return next();
         }
@@ -171,14 +168,13 @@ function revokeRefreshToken(req, res, next) {
 
 function generateAccessToken(req, res, next) {
 
-    console.log('inside generate access token');
-
     // Define token body
     req.token = jwt.sign({
         id: req.user.id
     }, process.env.SECRET, {
         expiresIn: 5 * 60
     });
+
     return next();
 }
 
