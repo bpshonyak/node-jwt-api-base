@@ -28,6 +28,7 @@ exports.postLogin = (req, res, next) => {
  * Create a new local account.
  */
 exports.postSignup = (req, res, next) => {
+
     req.assert('email', 'Email is not valid').isEmail();
     req.assert('password', 'Password must be at least 4 characters long').len(4);
     req.assert('confirmPassword', 'Passwords do not match').equals(req.body.password);
@@ -47,16 +48,18 @@ exports.postSignup = (req, res, next) => {
 
         if (existingUser) {
             var err = {
-                msg: 'Account with that email address already exists.'
+                msg: 'Account with that email address already exists.',
+                status: 403
             };
             return next(err);
         }
+
         user.save((err) => {
-            if (err) {
-                return next(err);
-            }
+            if (err)
+                return next(err)
+
             req.user = user;
-            return next(null);
+            return next(false);
         });
     });
 };

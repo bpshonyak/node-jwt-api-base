@@ -61,41 +61,28 @@ app.use(passport.initialize());
 /**
  * Server responses
  */
- const respond = {
-     auth: function(err, req, res, next) {
+const respond = {
+    auth: function(req, res, next) {
 
-         console.log('inside auth response');
+        res.status(200).json({user: req.user, token: req.token});
 
-         if (err) return next(err);
+    },
+    token: function(req, res, next) {
 
-        //  res.status(500).json({error: err});
+        res.status(201).json({refreshToken: req.refreshToken});
+    },
+    revoke: function(req, res, next) {
 
-         res.status(200).json({
-           user: req.user,
-           token: req.token
-         });
-
-     },
-     token: function(req, res) {
-         res.status(201).json({
-           refreshToken: req.refreshToken
-         });
-     },
-     revoke: function(req, res) {
-         res.status(200).json({
-           success: "Refresh token has been revoked!"
-         });
-     }
- }
+        res.status(200).json({success: "Refresh token has been revoked!"});
+    }
+}
 
 /**
  * API routes.
  */
 
 app.get('/', function(req, res) {
-    res.status(200).json({
-        API: 'JWT-AUTH-STARTER'
-    });
+    res.status(200).json({API: 'JWT-AUTH-STARTER'});
 });
 
 app.get('/profile', authenticate, function(req, res) {
@@ -103,7 +90,9 @@ app.get('/profile', authenticate, function(req, res) {
 });
 
 app.post('/login', userController.postLogin, serializeUser, generateAccessToken, respond.auth);
-app.get('/logout', function (req, res) { res.redirect('/token/revoke') });
+app.get('/logout', function(req, res) {
+    res.redirect('/token/revoke')
+});
 // app.get('/forgot', userController.getForgot);
 // app.post('/forgot', userController.postForgot);
 // app.get('/reset/:token', userController.getReset);
@@ -136,13 +125,15 @@ app.post('/token/revoke', revokeRefreshToken, respond.revoke);
  * Helper Funtions
  */
 
-function serializeUser(err, req, res, next) {
-    if (err) return next(err);
+function serializeUser(req, res, next) {
 
-    console.log("opps");
+    console.log('inside serialize user');
 
-    req.user = { id: req.user.id };
-    return next(null);
+    req.user = {
+        id: req.user.id
+    };
+
+    return next();
 }
 
 function validateRefreshToken(req, res, next) {
@@ -153,12 +144,10 @@ function validateRefreshToken(req, res, next) {
 
     clientController.validateToken(req.body.id, req.body.refreshToken, function(valid) {
 
-        if(!valid) {
-            res.status(500).json({
-              error: "Failed to validate refresh token."
-            });
+        if (!valid) {
+            res.status(500).json({error: "Failed to validate refresh token."});
         } else {
-            return next(null);
+            return next();
         }
     });
 }
@@ -171,22 +160,18 @@ function revokeRefreshToken(req, res, next) {
 
     clientController.revokeToken(req.body.id, req.body.refreshToken, function(valid) {
 
-        if(!valid) {
-            res.status(500).json({
-              error: "Failed to revoke refresh token."
-            });
+        if (!valid) {
+            res.status(500).json({error: "Failed to revoke refresh token."});
         } else {
-            return next(null);
+            return next();
         }
     });
 
 }
 
-function generateAccessToken(err, req, res, next) {
+function generateAccessToken(req, res, next) {
 
     console.log('inside generate access token');
-
-    if (err) return next(err);
 
     // Define token body
     req.token = jwt.sign({
@@ -194,12 +179,13 @@ function generateAccessToken(err, req, res, next) {
     }, process.env.SECRET, {
         expiresIn: 5 * 60
     });
-    return next(null);
+    return next();
 }
 
 function generateRefreshToken(req, res, next) {
     clientController.createOrUpdateClient(req.user.id, function(refreshToken, err) {
-        if (err) return next(err);
+        if (err)
+            return next(err);
 
         console.log(refreshToken);
         req.refreshToken = refreshToken;
@@ -213,9 +199,9 @@ function generateRefreshToken(req, res, next) {
 // app.use(errorHandler());
 
 // error handler
-app.use(function(err, req, res, next) {
+app.use(function(err, req, res, next) { // eslint-disable-line no-unused-vars
     res.status(500);
-    res.json({ errors: err });
+    res.json({errors: err});
 });
 
 /**
