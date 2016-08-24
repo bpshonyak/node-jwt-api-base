@@ -39,20 +39,17 @@ exports.validateToken = (user_id, token, cb) => {
   Client.findOne({ _id: user_id}, (err, existingClient) => {
 
     if (!existingClient) {
-      cb(false);
+      return cb({msg: 'The client id provided does not exists', status: 500});
     } else {
-
-      var valid = false;
 
       existingClient.refreshTokens.map(function(refreshToken) {
 
         if (token === refreshToken) {
-          valid = true;
-          return;
+          return cb();
         }
       });
 
-      cb(valid);
+      return cb({msg: 'Refresh token not found', status: 500});
 
     }
   });
@@ -62,25 +59,30 @@ exports.revokeToken = (user_id, token, cb) => {
   Client.findOne({ _id: user_id}, (err, existingClient) => {
 
     if (!existingClient) {
-      cb(false);
+      return cb({msg: 'The client id provided does not exists', status: 500});
     } else {
 
-      var valid = false;
+      var found = false;
       var tokenIndex = -1;
 
       for (var i = 0; i < existingClient.refreshTokens.length; i++) {
         if (token === existingClient.refreshTokens[i]) {
-          valid = true;
+          found = true;
           tokenIndex = i;
         }
       }
 
-      if(valid){
+      if(found){
         existingClient.refreshTokens.splice( tokenIndex, 1 );
+      } else {
+        return cb({msg: 'Refresh token not found', status: 500});
       }
 
       existingClient.save((err) => {
-        cb(valid, err);
+        if (err)
+          return cb(err);
+
+        return cb();
       });
 
     }
