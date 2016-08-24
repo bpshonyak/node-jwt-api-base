@@ -84,10 +84,6 @@ app.get('/', function(req, res) {
     res.status(200).json({API: 'JWT-AUTH-STARTER'});
 });
 
-app.get('/profile', authenticate, function(req, res) {
-    res.status(200).json(req.user);
-});
-
 app.post('/login', userController.postLogin, serializeUser, generateAccessToken, respond.auth);
 app.get('/logout', function(req, res) {
     res.redirect('/token/revoke')
@@ -139,13 +135,12 @@ function validateRefreshToken(req, res, next) {
         id: req.body.id
     }
 
-    clientController.validateToken(req.body.id, req.body.refreshToken, function(valid) {
+    clientController.validateToken(req.body.id, req.body.refreshToken, function(err) {
 
-        if (!valid) {
-            return next({ msg: "Failed to validate refresh token.", status: 500 });
-        } else {
-            return next();
-        }
+        if (err)
+            return next(err);
+
+        return next();
     });
 }
 
@@ -155,13 +150,12 @@ function revokeRefreshToken(req, res, next) {
         id: req.body.id
     }
 
-    clientController.revokeToken(req.body.id, req.body.refreshToken, function(valid) {
+    clientController.revokeToken(req.body.id, req.body.refreshToken, function(err) {
 
-        if (!valid) {
-            return next({ msg: "Failed to revoke refresh token.", status: 500 });
-        } else {
-            return next();
-        }
+        if (err)
+            return next(err);
+
+        return next();
     });
 
 }
@@ -183,9 +177,8 @@ function generateRefreshToken(req, res, next) {
         if (err)
             return next(err);
 
-        console.log(refreshToken);
         req.refreshToken = refreshToken;
-        return next(null);
+        return next();
     });
 }
 
